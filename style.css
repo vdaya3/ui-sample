@@ -1,0 +1,18 @@
+body {
+    background-color: #f8f9fa;
+}
+
+h1 {
+    color: #343a40;
+}
+
+.card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.list-group-item {
+    margin-top: 1em;
+    padding: 1em;
+    background-color: #ffffff;
+    border-radius: 0.5em;
+}
