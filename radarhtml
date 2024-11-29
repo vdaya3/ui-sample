@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Editor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+    <h1>CSV Editor</h1>
+    <div id="csvEditor"></div>
+    <button id="saveCsv">Save and Generate Radar</button>
+    <script>
+        const csvEditor = document.getElementById('csvEditor');
+        const saveButton = document.getElementById('saveCsv');
+        let csvData = [];
+
+        // Load CSV from the server
+        async function loadCsv() {
+            const response = await fetch('/load-csv');
+            const csv = await response.text();
+            csvData = Papa.parse(csv, { header: false }).data;
+            renderTable(csvData);
+        }
+
+        // Render the CSV data in a table
+        function renderTable(data) {
+            csvEditor.innerHTML = '';
+            const table = document.createElement('table');
+            const tbody = document.createElement('tbody');
+
+            data.forEach((row, rowIndex) => {
+                const tr = document.createElement('tr');
+                row.forEach((cell, colIndex) => {
+                    const td = document.createElement(rowIndex === 0 ? 'th' : 'td');
+                    td.contentEditable = rowIndex !== 0; // Make header non-editable
+                    td.textContent = cell;
+                    td.addEventListener('input', (e) => {
+                        csvData[rowIndex][colIndex] = e.target.textContent;
+                    });
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+
+            table.appendChild(tbody);
+            csvEditor.appendChild(table);
+        }
+
+        // Save the updated CSV back to the server
+        async function saveCsv() {
+            const updatedCsv = Papa.unparse(csvData);
+            const response = await fetch('/save-csv', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ csv: updatedCsv }),
+            });
+            if (response.ok) {
+                console.log('CSV saved successfully');
+                alert('CSV saved and radar updated!');
+                loadCsv(); // Reload the table
+            } else {
+                console.error('Error saving CSV');
+            }
+        }
+
+        // Event listeners
+        saveButton.addEventListener('click', saveCsv);
+
+        // Load CSV on page load
+        window.onload = loadCsv;
+    </script>
+</body>
+</html>
