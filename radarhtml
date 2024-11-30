@@ -1,88 +1,276 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSV Editor</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="/images/favicon.ico" rel="icon" />
+    <link rel="preconnect" href="https://rsms.me/" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" integrity="sha512-byor" crossorigin="anonymous" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://getbootstrap.com/docs/5.3/assets/css/docs.css" rel="stylesheet" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
     <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        th {
-            background-color: #f4f4f4;
-        }
+      /* .body {
+        background-color: #f8f9fa;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      } */
+      .card {
+        width: 100%;
+      }
+      table th,
+      table td {
+        vertical-align: middle;
+      }
+      #csvEditor {
+        max-height: 400px;
+        overflow-y: auto;
+      }
     </style>
-</head>
-<body>
-    <h1>CSV Editor</h1>
-    <div id="csvEditor"></div>
-    <button id="saveCsv">Save and Generate Radar</button>
+  </head>
+
+  <body>
+    <header class="input-sheet__logo">
+      <div>
+        <span>Powered by</span>
+        <a href="https://www.thoughtworks.com"><img src="/images/tw-logo.png" alt="Thoughtworks logo" /></a>
+      </div>
+    </header>
+    <div class="hero-banner">
+      <div class="hero-banner__wrapper">
+        <h1 class="hero-banner__title-text">Build your own Radar</h1>
+      </div>
+    </div>
+    <main>
+      <div id="pdf-cover-page">
+        <img class="pdf-banner-image" src="/images/pdf_banner.png" alt="Pdf cover image" width="100%" height="300px" />
+        <h1 class="pdf-title"></h1>
+        <div class="pdf-powered-by-text">
+          <span>Powered by</span>
+          <a href="https://www.thoughtworks.com">
+            <img class="pdf-tw-logo" src="/images/tw-logo.png" alt="logo" />
+          </a>
+        </div>
+      </div>
+      <div class="helper-description home-page">
+        <p>
+          Once you've <a href="https://www.thoughtworks.com/radar/byor">created your Radar</a> you can use this service
+          to generate an interactive version of your Technology Radar. Not sure how?
+          <a href="https://www.thoughtworks.com/radar/byor">Read this first.</a>
+        </p>
+        <span class="loader-text">
+          <span class="loader-text__title">Building your radar...</span>
+          <p>Your Technology Radar will be available in just a few seconds</p>
+          <div class="loader-wrapper">
+            <div style="animation-delay: 0s"></div>
+            <div style="animation-delay: 0.25s"></div>
+            <div style="animation-delay: 0.75s"></div>
+            <div style="animation-delay: 0.5s"></div>
+          </div>
+        </span>
+      </div>
+      <div id="error-container" class="error-container home-page"></div>
+      <!-- Form for File Upload -->
+      <div class="input-sheet-form home-page">
+        <div class="card shadow">
+          <div class="card-header bg-primary text-white text-center">
+            <h4>CSV Editor</h4>
+          </div>
+          <div class="card-body">
+            <div id="csvEditor" class="mb-3"></div>
+            <div class="text-center">
+              <button id="saveCsv" class="btn btn-success">Save and Upload</button>
+            </div>
+          </div>
+          <form id="byor-form-submit" method="get">
+            <input type="text" name="documentId" id="document-input" hidden />
+            <input type="submit" value="Build my radar" />
+            <a href="https://www.thoughtworks.com/radar/byor#guide">Need help?</a>
+          </form>
+        </div>
+        <form id="byor-form-submit" method="get">
+          <input type="text" name="documentId" id="document-input" hidden />
+          <input type="submit" value="Build my radar" />
+          <a href="https://www.thoughtworks.com/radar/byor#guide">Need help?</a>
+        </form>
+      </div>
+
+      <div class="graph-header"></div>
+      <div id="radar">
+        <p class="no-blip-text">
+          There are no blips on this quadrant, please check your Google sheet/CSV/JSON file once.
+        </p>
+      </div>
+      <div class="all-quadrants-mobile show-all-quadrants-mobile"></div>
+      <div class="graph-footer"></div>
+    </main>
+    <footer class="home-page">
+      <div class="pdf-footer">
+        <div class="pdf-powered-by-text">
+          <span>Powered by</span>
+          <a href="https://www.thoughtworks.com">
+            <img class="pdf-tw-logo" src="/images/tw-logo.png" alt="logo" />
+          </a>
+          <div class="pdf-footer-title">Build your own Radar</div>
+          <a class="radar-link" id="generated-radar-link" href="https://radar.thoughtworks.com">
+            radar.thoughtworks.com
+          </a>
+        </div>
+      </div>
+      <p class="agree-terms">
+        Powered by <a href="https://www.thoughtworks.com"> Thoughtworks</a>. By using this service you agree to
+        <a href="https://www.thoughtworks.com/radar/tos">Thoughtworks' terms of use</a>. You also agree to our
+        <a href="https://www.thoughtworks.com/privacy-policy">privacy policy</a>, which describes how we will gather,
+        use and protect any personal data contained in your public Google Sheet. This software is
+        <a href="https://github.com/thoughtworks/build-your-own-radar">open source</a> and available for download and
+        self-hosting.
+      </p>
+    </footer>
+    <div class="pdf-page-footer">
+      <div class="footer-left">radar.thoughtworks.com</div>
+      <div class="footer-right">
+        Build your own radar, <span class="footer-date">dd/mm/yyyy</span> | <span class="footer-page-number">00</span>
+      </div>
+    </div>
     <script>
-        const csvEditor = document.getElementById('csvEditor');
-        const saveButton = document.getElementById('saveCsv');
-        let csvData = [];
+      //Handle Csv Editor
 
-        // Load CSV from the server
-        async function loadCsv() {
-            const response = await fetch('/load-csv');
-            const csv = await response.text();
-            csvData = Papa.parse(csv, { header: false }).data;
-            renderTable(csvData);
-        }
+      const csvEditor = document.getElementById('csvEditor')
+      const saveButton = document.getElementById('saveCsv')
+      let csvData = []
 
-        // Render the CSV data in a table
-        function renderTable(data) {
-            csvEditor.innerHTML = '';
-            const table = document.createElement('table');
-            const tbody = document.createElement('tbody');
+      // Load CSV from the server
+      async function loadCsv() {
+        const response = await fetch('/api/load-csv')
+        const csv = await response.text()
+        csvData = Papa.parse(csv, { header: false }).data
+        renderTable(csvData)
+      }
 
-            data.forEach((row, rowIndex) => {
-                const tr = document.createElement('tr');
-                row.forEach((cell, colIndex) => {
-                    const td = document.createElement(rowIndex === 0 ? 'th' : 'td');
-                    td.contentEditable = rowIndex !== 0; // Make header non-editable
-                    td.textContent = cell;
-                    td.addEventListener('input', (e) => {
-                        csvData[rowIndex][colIndex] = e.target.textContent;
-                    });
-                    tr.appendChild(td);
-                });
-                tbody.appendChild(tr);
-            });
+      // Render the CSV data in a table
+      function renderTable(data) {
+        csvEditor.innerHTML = ''
+        const table = document.createElement('table')
+        table.className = 'table table-bordered table-hover table-sm' // Bootstrap table classes
+        const thead = document.createElement('thead')
+        const tbody = document.createElement('tbody')
 
-            table.appendChild(tbody);
-            csvEditor.appendChild(table);
-        }
+        data.forEach((row, rowIndex) => {
+          const tr = document.createElement('tr')
 
-        // Save the updated CSV back to the server
-        async function saveCsv() {
-            const updatedCsv = Papa.unparse(csvData);
-            const response = await fetch('/save-csv', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ csv: updatedCsv }),
-            });
-            if (response.ok) {
-                console.log('CSV saved successfully');
-                alert('CSV saved and radar updated!');
-                loadCsv(); // Reload the table
+          row.forEach((cell, colIndex) => {
+            const cellElement = document.createElement(rowIndex === 0 ? 'th' : 'td')
+            cellElement.contentEditable = rowIndex !== 0 // Make header non-editable
+            cellElement.textContent = cell
+            cellElement.addEventListener('input', (e) => {
+              csvData[rowIndex][colIndex] = e.target.textContent
+            })
+
+            // Add Bootstrap text classes for consistent alignment
+            if (rowIndex === 0) {
+              cellElement.className = 'text-center fw-bold' // Bold headers
             } else {
-                console.error('Error saving CSV');
+              cellElement.className = 'text-start' // Left-align content
             }
+
+            tr.appendChild(cellElement)
+          })
+
+          // Append rows to the appropriate section
+          if (rowIndex === 0) {
+            thead.appendChild(tr)
+          } else {
+            tbody.appendChild(tr)
+          }
+        })
+
+        table.appendChild(thead)
+        table.appendChild(tbody)
+        csvEditor.appendChild(table)
+      }
+
+      // Save the updated CSV file
+      async function saveCsv() {
+        const updatedCsv = Papa.unparse(csvData) // Convert CSV data to a string
+        const blob = new Blob([updatedCsv], { type: 'text/csv' }) // Create a Blob object
+        const formData = new FormData()
+        formData.append('file', blob, 'radar.csv') // Append the Blob to FormData
+
+        try {
+          const response = await fetch('/api/save-csv', {
+            method: 'POST',
+            body: formData,
+          })
+
+          if (!response.ok) {
+            console.error('Error saving CSV:', response.statusText)
+            alert('Failed to save the CSV. Please try again.')
+            return
+          }
+
+          const result = await response.json() // Parse the JSON response
+          console.log('CSV saved successfully')
+          alert('CSV saved and radar updated!')
+
+          // Set the hidden input field with the file URL
+          const documentInput = document.getElementById('document-input')
+          if (documentInput) {
+            documentInput.value = result.fileUrl
+            console.log('File URL set to hidden input:', result.fileUrl)
+          } else {
+            console.error('Hidden input field not found!')
+          }
+
+          loadCsv() // Reload the table with the updated CSV
+        } catch (error) {
+          console.error('Error saving CSV:', error)
+          alert('An error occurred while saving the CSV.')
         }
+      }
 
-        // Event listeners
-        saveButton.addEventListener('click', saveCsv);
+      // Event listeners
+      saveButton.addEventListener('click', saveCsv)
 
-        // Load CSV on page load
-        window.onload = loadCsv;
+      // Load CSV on page load
+      window.onload = loadCsv()
+
+      // **************************************************//
+      // Handle file upload
+      // document.getElementById('file-upload-form').addEventListener('submit', async function (event) {
+      //   event.preventDefault() // Prevent the default form submission
+
+      //   const fileInput = document.getElementById('fileInput')
+      //   const formData = new FormData()
+      //   formData.append('file', fileInput.files[0]) // Add the uploaded file to form data
+
+      //   try {
+      //     const response = await fetch('http://localhost:3000/upload', {
+      //       method: 'POST',
+      //       body: formData,
+      //     })
+
+      //     const data = await response.json()
+      //     if (response.ok) {
+      //       // Set the generated URL in the text input
+      //       // Assuming you will add an input field for the file URL.
+      //       document.getElementById('document-input').value = data.fileUrl
+      //       alert('File uploaded successfully.') // Add confirmation
+      //     } else {
+      //       alert('Upload failed: ' + data.error)
+      //     }
+      //   } catch (error) {
+      //     console.error('Error during upload:', error)
+      //     alert('An error occurred during the upload.')
+      //   }
+      // })
     </script>
-</body>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  </body>
 </html>
