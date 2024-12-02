@@ -21,6 +21,22 @@
       .card {
         width: 100%;
       }
+      .ht_clone_top tr th,
+      .ht_clone_top tr td {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background-color: #f8f9fa; /* Optional: Adjust to match your theme */
+        box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4); /* Optional: Add shadow for emphasis */
+      }
+      /* Sticky header for the first row */
+      .ht_clone_top {
+        position: sticky;
+        top: 0;
+        z-index: 2; /* Ensure it stays on top of other elements */
+        background-color: #f8f9fa; /* Optional: Background color for the header */
+        box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4); /* Optional: Shadow for better visibility */
+      }
       table th,
       table td {
         vertical-align: middle;
@@ -140,22 +156,35 @@
         data: [], // Will be populated with CSV data
         rowHeaders: true,
         colHeaders: true,
-        licenseKey: 'non-commercial-and-evaluation', // Replace with a valid license if needed
+        licenseKey: 'non-commercial-and-evaluation',
         stretchH: 'all',
-        contextMenu: true, // Enable right-click menu for row/column options
+        contextMenu: {
+          items: {
+            row_above: {},
+            row_below: {},
+            remove_row: {},
+            '---------': {},
+            copy: {},
+            cut: {},
+            undo: {},
+            redo: {},
+          },
+        },
         manualColumnResize: true,
         manualRowResize: true,
         filters: true,
         dropdownMenu: true,
+        allowInsertColumn: false, // Disable column insertion
+        allowRemoveColumn: false, // Disable column removal
         allowInsertRow: true, // Enable adding rows
         allowRemoveRow: true, // Enable removing rows
-        height: 600, // Set height of the editor
-        width: '100%', // Set width of the editor
+        height: 600,
+        width: '100%',
+        fixedRowsTop: 1,
         cells: (row, col) => {
           const cellProperties = {}
           if (row === 0) {
-            // Make the first row read-only
-            cellProperties.readOnly = true
+            cellProperties.readOnly = true // Make the first row read-only
           }
           return cellProperties
         },
